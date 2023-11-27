@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include <DHT20.h>
 
-#define tmpPIN 15
+#define tmpPIN 12
 DHT20 DHT;
 
+void readTempTMP();
 
 void setup()
 {
@@ -14,6 +15,7 @@ void setup()
   DHT.begin();    //  ESP32 default pins 21 22
 
   delay(1000);
+  // pinMode(tmpPIN, )
   Serial.println("Ready");
 }
 
@@ -28,49 +30,54 @@ void loop()
   Serial.print("Humidity: ");
   Serial.print(hum);
   Serial.println(" %");
+  // Serial.println("Other sensor:");
+  // readTempTMP();
 
-  switch (status)
-    {
-      case DHT20_OK:
-        Serial.print("OK");
-        break;
-      case DHT20_ERROR_CHECKSUM:
-        Serial.print("Checksum error");
-        break;
-      case DHT20_ERROR_CONNECT:
-        Serial.print("Connect error");
-        break;
-      case DHT20_MISSING_BYTES:
-        Serial.print("Missing bytes");
-        break;
-      case DHT20_ERROR_BYTES_ALL_ZERO:
-        Serial.print("All bytes read zero");
-        break;
-      case DHT20_ERROR_READ_TIMEOUT:
-        Serial.print("Read time out");
-        break;
-      case DHT20_ERROR_LASTREAD:
-        Serial.print("Error read too fast");
-        break;
-      default:
-        Serial.print("Unknown error");
-        break;
-    }
+  // switch (status)
+  //   {
+  //     case DHT20_OK:
+  //       Serial.print("OK");
+  //       break;
+  //     case DHT20_ERROR_CHECKSUM:
+  //       Serial.print("Checksum error");
+  //       break;
+  //     case DHT20_ERROR_CONNECT:
+  //       Serial.print("Connect error");
+  //       break;
+  //     case DHT20_MISSING_BYTES:
+  //       Serial.print("Missing bytes");
+  //       break;
+  //     case DHT20_ERROR_BYTES_ALL_ZERO:
+  //       Serial.print("All bytes read zero");
+  //       break;
+  //     case DHT20_ERROR_READ_TIMEOUT:
+  //       Serial.print("Read time out");
+  //       break;
+  //     case DHT20_ERROR_LASTREAD:
+  //       Serial.print("Error read too fast");
+  //       break;
+  //     default:
+  //       Serial.print("Unknown error");
+  //       break;
+  //   }
   
   Serial.print("\n-------------\n\n");
-  delay(1000);
+  delay(5000);
 } 
 
 void readTempTMP()
 {
   int reading = analogRead(tmpPIN);
+  Serial.print("Analog read: ");
+  Serial.println(reading);
+
 
   // Convert that reading into voltage
-  float voltage = reading * (3.3 / 4095.0);
+  float voltage = reading * (5 / 4095.0);
 
   // Convert the voltage into the temperature in Celsius
   float temperatureC = (voltage - 0.5) * 100;
-|
+
   // Print the temperature in Celsius
   Serial.print("Temperature: ");
   Serial.print(temperatureC);

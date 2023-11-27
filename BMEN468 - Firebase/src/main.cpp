@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
+#include <DHT20.h>
 
 //Provide the token generation process info.
 #include "addons/TokenHelper.h"
@@ -12,6 +13,10 @@
 #define WIFI_PASSWORD "candy123"
 #define API_KEY "AIzaSyDHcJmpHM6pFtUQfq1X1cd5VB8HyWatCHg" // Insert Firebase project API Key
 #define DATABASE_URL "https://bmen-468-default-rtdb.firebaseio.com/" // Insert RTDB URLefine the RTDB URL */
+
+// DHT20 sensor
+DHT20 DHT;
+
 
 // Define Firebase objects
 FirebaseData fbdo;
@@ -26,7 +31,7 @@ String tempPath = "test/Temperature";
 String humPath = "test/Humidity";
 
 unsigned long sendDataPrevMillis = 0;
-int timerDelay = 3000;
+int timerDelay = 3000; // 3 seconds between readings
 bool signupOK = false;
 
 // Initialize WiFi
@@ -59,8 +64,10 @@ void sendFloat(String path, float value){
 }
 
 void setup(){
-  Serial.begin(115200);
-  initWiFi();
+  Wire.begin();
+  DHT.begin(); // Initialize DHT sensor
+  Serial.begin(115200); 
+  initWiFi(); // Initialize Wifi
 
   /* Assign the api key (required) */
   config.api_key = API_KEY;
@@ -82,22 +89,33 @@ void setup(){
   
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
+  delay(1000);
+  Serial.println("Setup done");
 }
 
 float temperature, humidity;
-float i = 0.1;
-
 
 void loop(){
   // Send new readings to database
   if (Firebase.ready() && (millis() - sendDataPrevMillis > timerDelay || sendDataPrevMillis == 0)){
     sendDataPrevMillis = millis();
 
-    temperature = i*2;
-    humidity = i + 1;
+    // Read from the sensor
+    int status = DHT.read(); 
+    temperature = DHT.getTemperature();
+    humidity = DHT.getHumidity();
+
+    temperature = floor(temperature * 10) / 10;
+    humidity = floor(humidity * 10) / 10;
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.println(" C");
+    Serial.print("Humidity: ");
+    Serial.print(humidity);
+    Serial.println(" %");
+
     // Send readings to database:
     sendFloat(tempPath, temperature);
     sendFloat(humPath, humidity);
-    i += 1;
   }
 }
